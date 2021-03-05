@@ -77,7 +77,7 @@ L'évaluation du code vérifie de la consistence de la structure.
  * @param q the queue
  * @return an element
  */
-static task_ptr __blocking_q_take(blocking_q *q);
+task_ptr __blocking_q_take(blocking_q *q);
 ```
 
 Vous devez implémenter la fonction `___blocking_q_take`. Cette fonction assume que l'accès aux données de la queue est
@@ -344,3 +344,4 @@ DIRO.
     rencontrez des problèmes avec ces techniques.
 
 - Les barèmes standards du [TPX](https://github.com/IFT2245/TPX) s'appliquent (fuites mémoires, accès illégaux, etc).
+
