@@ -1,0 +1,58 @@
+diff --git a/code/main.c b/code/main.c
+index f2748d1..2835715 100644
+--- a/code/main.c
++++ b/code/main.c
+@@ -47,7 +47,7 @@ long task_b() {
+ long task_c() {
+     printf("Task C starting...\n");
+     sleep(15);
+-    printf("Task C starting...\n");
++    printf("Task C ending...\n");
+     return TASK_C_T;
+ }
+ 
+@@ -57,7 +57,7 @@ long task_c() {
+ long task_d() {
+     printf("Task D starting...\n");
+     sleep(20);
+-    printf("Task D starting...\n");
++    printf("Task D ending...\n");
+     return TASK_D_T;
+ }
+ 
+@@ -93,9 +93,9 @@ void *scheduler(void *v_sched_data) {
+     blocking_q *q = data->sched_q;
+     processor *p = data->processors;
+ 
+-    bool run = true;
++    task_ptr poison = NULL;
+ 
+-    while (run) {
++    while (!poison) {
+         task_ptr t = blocking_q_get(q);
+         printf("Received t %c\n", t->type);
+ 
+@@ -111,22 +111,17 @@ void *scheduler(void *v_sched_data) {
+ 
+ 
+         if (POISON_PILL == t->type) {
+-            run = false;
++            poison = t;
+         }
+     }
+ 
+     // Stop the processors
+-    task_ptr poison = malloc(sizeof(task));
+-    poison->type = POISON_PILL;
+-
+     for (int i = 0; i < PROCESSOR_COUNT; ++i) {
+         processor *proc = data->processors + i;
+         // kill all processors
+         blocking_q_put(proc->tasks, poison);
+     }
+ 
+-    free(poison);
+-
+     return NULL;
+ }
+ 
