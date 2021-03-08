@@ -222,6 +222,8 @@ int main(int argc, char **argv) {
 
     pthread_join(sched_thread, NULL);
 
+    blocking_q_destroy(sched_q);
+
     printf("\n\n");
 
     for (int i = 0; i < PROCESSOR_COUNT; ++i) {
