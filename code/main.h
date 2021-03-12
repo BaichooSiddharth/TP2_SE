@@ -1,6 +1,8 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+#include "blocking_q.h"
+
 typedef struct {
   int id;
   long sched_t;
