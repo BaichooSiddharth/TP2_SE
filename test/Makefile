@@ -15,10 +15,4 @@ singletest: clean install
 	./tests_build/check_tests $(FOO)
 
 alltests: clean install
-	sudo apt-get update
-	sudo apt-get install
-	valgrind check -y
-	git clone https://github.com/WolfgangSt/libelf.git -q
-	cd libelf
-	sudo ./configure && make -s && sudo make install -s
 	python3 runall.py
