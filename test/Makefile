@@ -3,7 +3,7 @@ clean:
 
 installcheckelf:
 	python3 installcheckelf.py lcheck_pic || sudo apt-get install -y check
-	python3 installcheckelf.py lelf || (git clone https://github.com/WolfgangSt/libelf.git -q && cd libelf && sudo ./configure && make -s && sudo make install -s)
+	python3 installcheckelf.py lelf || (git clone -q https://github.com/WolfgangSt/libelf.git libelf && cd libelf && ls -al && ./configure && make -s && sudo make install -s)
 
 install: installcheckelf
 	python3 prep_tests.py
@@ -17,7 +17,4 @@ singletest: clean install
 alltests: clean install
 	sudo apt-get update -y
 	sudo apt-get install valgrind check -y
-	git clone https://github.com/WolfgangSt/libelf.git -q
-	cd libelf
-	sudo ./configure && make -s && sudo make install -s
 	python3 runall.py
