@@ -1,0 +1,13 @@
+diff --git a/code/main.h b/code/main.h
+index 8d751ad..9eea185 100644
+--- a/code/main.h
++++ b/code/main.h
+@@ -1,6 +1,8 @@
+ #ifndef __MAIN_H
+ #define __MAIN_H
+ 
++#include "blocking_q.h"
++
+ typedef struct {
+   int id;
+   long sched_t;
