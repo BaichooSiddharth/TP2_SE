@@ -2,7 +2,7 @@ clean:
 	sudo rm -rf libelf tests_build
 
 installcheckelf:
-	python3 installcheckelf.py lcheck_pic || sudo apt-get install check
+	python3 installcheckelf.py lcheck_pic || sudo apt-get install -y check
 	python3 installcheckelf.py lelf || (git clone https://github.com/WolfgangSt/libelf.git -q && cd libelf && sudo ./configure && make -s && sudo make install -s)
 
 install: installcheckelf
