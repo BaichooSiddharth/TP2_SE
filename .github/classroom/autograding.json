@@ -3,7 +3,7 @@
     {
       "name": "All of the tests",
       "setup": "",
-      "run": "cd test && make alltest",
+      "run": "cd test && make alltests",
       "input": "",
       "output": "",
       "comparison": "included",
