@@ -245,6 +245,13 @@ int main(int argc, char **argv) {
 
     free(poison_pill_task);
 
+    for (int i = 0; i < PROCESSOR_COUNT; ++i) {
+        processor *p = processors + i;
+        processor_destroy(p);
+    }
+
+    free(sched_q);
+
     return EXIT_SUCCESS;
 }
 // ༽つ۞﹏۞༼つ
