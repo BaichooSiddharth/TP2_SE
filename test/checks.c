@@ -105,7 +105,7 @@ DEFINE_TEST(test_blocking_q_destroy_1)
 
         ck_assert_int_eq('A', task.type);
 
-        free(node)
+        free(node);
     }
 END_TEST
 
