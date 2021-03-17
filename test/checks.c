@@ -104,8 +104,6 @@ DEFINE_TEST(test_blocking_q_destroy_1)
         blocking_q_destroy(&q); // if it frees an element, will crash all over
 
         ck_assert_int_eq('A', task.type);
-
-        free(node);
     }
 END_TEST
 
