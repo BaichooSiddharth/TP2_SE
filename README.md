@@ -113,7 +113,9 @@ void blocking_q_destroy(blocking_q *q);
 
 Vous devez implémenter la fonction `blocking_queue_destroy`. Celle-ci nettoie la blocking queue en désallouant la
 mémoire allouée ainsi qu'en détruisant les primitives de synchronisation. Elle doit libérer chaque noeuds, mais pas le
-contenu des noeuds.
+contenu des noeuds. De plus, les procédures `_destroy` ne libèrent pas le pointeur reçu en paramètre. La raison est
+que la structure pourrait être allouée sur le stack ou sur le heap et la fonction doit être correcte indépendement de
+comment l'allocation à été faite.
 
 ### Exercice 1.4
 
@@ -263,7 +265,10 @@ un processeur et configure la structure du processeur correctement.
 void processor_destroy(processor *p);
 ```
 
-Vous devez implémenter la fonction `processor_destroy` qui désalloue les ressources utilisées par le processeur.
+Vous devez implémenter la fonction `processor_destroy` qui désalloue les ressources utilisées par le processeur. Encore une fois,
+les procédures `_destroy` ne libèrent pas le pointeur reçu en paramètre. La raison est que la structure pourrait être allouée sur
+le stack ou sur le heap et la fonction doit être correcte indépendement de comment l'allocation à été faite.
+
 
 ### Exercice 2.3
 
