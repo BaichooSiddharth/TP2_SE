@@ -107,7 +107,6 @@ void *processor_run(void *v_self) {
     task_ptr t;
 
     proc->sched_t=0;
-    pthread_mutex_unlock(&(proc->lock));
     wait_start = time(NULL);
 
     while(true)
