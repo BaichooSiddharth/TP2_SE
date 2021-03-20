@@ -121,13 +121,13 @@ bool blocking_q_put(blocking_q *q, task_ptr data) {
  * @return the element
  */
 task_ptr blocking_q_get(blocking_q *q) {
-//    pthread_mutex_lock(&q->lock);
+    pthread_mutex_lock(&q->lock);
     while(q->sz == 0){
         pthread_cond_wait(&q->cond, &q->lock);
-//        pthread_mutex_lock(&q->lock);
+        pthread_mutex_lock(&q->lock);
     }
     task_ptr val = __blocking_q_take(q);
-//    pthread_mutex_unlock(&q->lock);
+    pthread_mutex_unlock(&q->lock);
     return val;
 }
 
