@@ -205,13 +205,19 @@ bool blocking_q_peek(blocking_q *q, task **c) {
         return false;
     }
     *c = temp;
+
+    pthread_mutex_lock(&q->lock);
     blocking_q_node *current = q->first;
     if(current == NULL){
+        pthread_mutex_unlock(&q->lock);
         return false;
     }
     void *ret = memcpy(*c, q->first->data, sizeof(task));
     if(!ret){
+        pthread_mutex_unlock(&q->lock);
         return false;
     }
+    pthread_mutex_unlock(&q->lock);
+
     return true;
 }
