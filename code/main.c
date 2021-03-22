@@ -119,21 +119,18 @@ void *processor_run(void *v_self) {
         wait_time += wait_end - wait_start;
         t->start = time(NULL);
 
+        task_time = 0;
         if(t->type=='A') task_time = task_a();
         if(t->type=='B') task_time = task_b();
         if(t->type=='C') task_time = task_c();
         if(t->type=='D') task_time = task_d();
-        if(t->type==POISON_PILL||t->type==NULL) {
-            free(t);
-            processor_destroy(proc);
-            break;
-        }
+        if(t->type==POISON_PILL||t->type==NULL) break;
+
         t->end = time(NULL);
         real_time += t->end - t->start;
         theo_time += task_time;
         wait_start = time(NULL);
 
-        free(t);
         pthread_mutex_lock(&(proc->lock));
         proc->sched_t -= task_time;
         pthread_mutex_unlock(&(proc->lock));
@@ -168,13 +165,14 @@ void *scheduler(void *v_sched_data) {
                     sched_time;
             int index=0;
             size_t sz;
+            bool task_put = false;
 
             if(t->type=='A') task_time1 = TASK_A_T;
             if(t->type=='B') task_time1 = TASK_B_T;
             if(t->type=='C') task_time1 = TASK_C_T;
             if(t->type=='D') task_time1 = TASK_D_T;
 
-            if(task_time1!=0) {
+            if(t->type!=POISON_PILL) {
                 pthread_mutex_lock(&((p+index)->lock));
                 sched_time = (p+index)->sched_t;
                 pthread_mutex_unlock(&((p+index)->lock));
@@ -187,36 +185,37 @@ void *scheduler(void *v_sched_data) {
                     }
                     pthread_mutex_unlock(&((p+i)->lock));
                 }
+
                 sz = (p+index)->tasks->sz;
-                task_ptr t_array = (task_ptr) malloc(sizeof(task)*sz);
-                sz = blocking_q_drain((p+index)->tasks,&t_array,sz);
+                task_ptr t_array[sz];
+                sz = blocking_q_drain((p+index)->tasks,t_array,sz);
+                task_ptr task2;
 
                 for(int i=0;i<sz;++i) {
-                    if((t_array+i)->type=='A') task_time2 = TASK_A_T;
-                    if((t_array+i)->type=='B') task_time2 = TASK_B_T;
-                    if((t_array+i)->type=='C') task_time2 = TASK_C_T;
-                    if((t_array+i)->type=='D') task_time2 = TASK_D_T;
+                    task2 = t_array[i];
+                    if(task2->type=='A') task_time2 = TASK_A_T;
+                    if(task2->type=='B') task_time2 = TASK_B_T;
+                    if(task2->type=='C') task_time2 = TASK_C_T;
+                    if(task2->type=='D') task_time2 = TASK_D_T;
 
-                    if(task_time1<=task_time2&&task_time1!=0) {
+                    if(task_time1<=task_time2&&task_put==false) {
                         blocking_q_put((p+index)->tasks, t);
 
                         pthread_mutex_lock(&((p+index)->lock));
                         (p+index)->sched_t += task_time1;
                         pthread_mutex_unlock(&((p+index)->lock));
 
-                        task_time1 = 0;
+                        task_put=true;
                     }
-                    blocking_q_put((p+index)->tasks, (t_array+i));
+                    blocking_q_put((p+index)->tasks, task2);
                 }
-                if(task_time1!=0) {
+                if(task_put==false) {
                     blocking_q_put((p+index)->tasks, t);
 
                     pthread_mutex_lock(&((p+index)->lock));
                     (p+index)->sched_t += task_time1;
                     pthread_mutex_unlock(&((p+index)->lock));
                 }
-
-                free(t_array);
 
             }
         }

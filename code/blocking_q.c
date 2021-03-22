@@ -172,7 +172,10 @@ size_t blocking_q_drain_at_least(blocking_q *q, task_ptr *data, size_t sz, size_
     while(count < sz){
         blocking_q_node *current = q->first;
         if(count < min){
-            task = blocking_q_get(q);
+            while(q->sz == 0){
+                pthread_cond_wait(&q->cond, &q->lock);
+            }
+            task = __blocking_q_take(q);
             data[count] = task;
         } else {
             if(current == NULL){
