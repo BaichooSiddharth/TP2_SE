@@ -140,7 +140,6 @@ task_ptr blocking_q_get(blocking_q *q) {
  */
 size_t blocking_q_drain(blocking_q *q, task_ptr *data, size_t sz) {
     size_t counter = 0;
-    task_ptr t_array = data[0];
 
     pthread_mutex_lock(&q->lock);
     blocking_q_node *current = q->first;
@@ -148,10 +147,9 @@ size_t blocking_q_drain(blocking_q *q, task_ptr *data, size_t sz) {
     while(current!= NULL && counter < sz){
         current = current->next;
         task = __blocking_q_take(q);
-        t_array[counter] = task[0];
+        data[counter] = task;
         counter++;
     }
-    data[0] = t_array;
     pthread_mutex_unlock(&q->lock);
 
     return counter;
@@ -168,7 +166,6 @@ size_t blocking_q_drain(blocking_q *q, task_ptr *data, size_t sz) {
  */
 size_t blocking_q_drain_at_least(blocking_q *q, task_ptr *data, size_t sz, size_t min) {
     int count = 0;
-    task_ptr t_array = data[0];
     task_ptr task;
 
     pthread_mutex_lock(&q->lock);
@@ -176,18 +173,17 @@ size_t blocking_q_drain_at_least(blocking_q *q, task_ptr *data, size_t sz, size_
         blocking_q_node *current = q->first;
         if(count < min){
             task = blocking_q_get(q);
-            t_array[count] = task[0];
+            data[count] = task;
         } else {
             if(current == NULL){
                 break;
             } else {
                 task = __blocking_q_take(q);
-                t_array[count] = task[0];
+                data[count] = task;
             }
         }
         count++;
     }
-    data[0] = t_array;
     pthread_mutex_unlock(&q->lock);
 
     return count;

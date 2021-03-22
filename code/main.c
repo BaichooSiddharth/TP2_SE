@@ -169,16 +169,16 @@ void *scheduler(void *v_sched_data) {
             int index=0;
             size_t sz;
 
-            pthread_mutex_lock(&((p+index)->lock));
-            sched_time = (p+index)->sched_t;
-            pthread_mutex_unlock(&((p+index)->lock));
-
             if(t->type=='A') task_time1 = TASK_A_T;
             if(t->type=='B') task_time1 = TASK_B_T;
             if(t->type=='C') task_time1 = TASK_C_T;
             if(t->type=='D') task_time1 = TASK_D_T;
 
             if(task_time1!=0) {
+                pthread_mutex_lock(&((p+index)->lock));
+                sched_time = (p+index)->sched_t;
+                pthread_mutex_unlock(&((p+index)->lock));
+
                 for(int i=1;i<PROCESSOR_COUNT;++i) {
                     pthread_mutex_lock(&((p+i)->lock));
                     if (sched_time>(p+i)->sched_t) {
