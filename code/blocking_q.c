@@ -140,16 +140,20 @@ task_ptr blocking_q_get(blocking_q *q) {
  */
 size_t blocking_q_drain(blocking_q *q, task_ptr *data, size_t sz) {
     size_t counter = 0;
+    task_ptr t_array = data[0];
+
     pthread_mutex_lock(&q->lock);
     blocking_q_node *current = q->first;
     task_ptr task;
     while(current!= NULL && counter < sz){
         current = current->next;
         task = __blocking_q_take(q);
-        data[counter] = task;
+        t_array[counter] = task[0];
         counter++;
     }
+    data[0] = t_array;
     pthread_mutex_unlock(&q->lock);
+
     return counter;
 }
 
@@ -164,19 +168,28 @@ size_t blocking_q_drain(blocking_q *q, task_ptr *data, size_t sz) {
  */
 size_t blocking_q_drain_at_least(blocking_q *q, task_ptr *data, size_t sz, size_t min) {
     int count = 0;
+    task_ptr t_array = data[0];
+    task_ptr task;
+
+    pthread_mutex_lock(&q->lock);
     while(count < sz){
         blocking_q_node *current = q->first;
         if(count < min){
-            data[count] = blocking_q_get(q);
+            task = blocking_q_get(q);
+            t_array[count] = task[0];
         } else {
             if(current == NULL){
                 break;
             } else {
-                data[count] = __blocking_q_take(q);
+                task = __blocking_q_take(q);
+                t_array[count] = task[0];
             }
         }
         count++;
     }
+    data[0] = t_array;
+    pthread_mutex_unlock(&q->lock);
+
     return count;
 }
 

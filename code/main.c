@@ -93,6 +93,7 @@ bool processor_init(int id, processor *p) {
 void processor_destroy(processor *p) {
     blocking_q_destroy(p->tasks);
     pthread_mutex_destroy(&(p->lock));
+    free(p->tasks);
 }
 
 void *processor_run(void *v_self) {
@@ -107,6 +108,7 @@ void *processor_run(void *v_self) {
     task_ptr t;
 
     proc->sched_t=0;
+
     wait_start = time(NULL);
 
     while(true)
@@ -185,39 +187,38 @@ void *scheduler(void *v_sched_data) {
                     }
                     pthread_mutex_unlock(&((p+i)->lock));
                 }
+                sz = (p+index)->tasks->sz;
+                task_ptr t_array = (task_ptr) malloc(sizeof(task)*sz);
+                sz = blocking_q_drain((p+index)->tasks,&t_array,sz);
 
-            }
-            sz = (p+index)->tasks->sz;
-            task_ptr t_array = malloc(sizeof(task_ptr));
-            sz = blocking_q_drain((p+index)->tasks,&t_array,sz);
+                for(int i=0;i<sz;++i) {
+                    if((t_array+i)->type=='A') task_time2 = TASK_A_T;
+                    if((t_array+i)->type=='B') task_time2 = TASK_B_T;
+                    if((t_array+i)->type=='C') task_time2 = TASK_C_T;
+                    if((t_array+i)->type=='D') task_time2 = TASK_D_T;
 
-            for(int i=0;i<sz;++i) {
-                if((t_array+i)->type=='A') task_time2 = TASK_A_T;
-                if((t_array+i)->type=='B') task_time2 = TASK_B_T;
-                if((t_array+i)->type=='C') task_time2 = TASK_C_T;
-                if((t_array+i)->type=='D') task_time2 = TASK_D_T;
+                    if(task_time1<=task_time2&&task_time1!=0) {
+                        blocking_q_put((p+index)->tasks, t);
 
-                if(task_time1<=task_time2&&task_time1!=0) {
+                        pthread_mutex_lock(&((p+index)->lock));
+                        (p+index)->sched_t += task_time1;
+                        pthread_mutex_unlock(&((p+index)->lock));
+
+                        task_time1 = 0;
+                    }
+                    blocking_q_put((p+index)->tasks, (t_array+i));
+                }
+                if(task_time1!=0) {
                     blocking_q_put((p+index)->tasks, t);
 
                     pthread_mutex_lock(&((p+index)->lock));
                     (p+index)->sched_t += task_time1;
                     pthread_mutex_unlock(&((p+index)->lock));
-
-                    task_time1 = 0;
                 }
-                blocking_q_put((p+index)->tasks, (t_array+i));
+
+                free(t_array);
+
             }
-            if(task_time1!=0) {
-                blocking_q_put((p+index)->tasks, t);
-
-                pthread_mutex_lock(&((p+index)->lock));
-                (p+index)->sched_t += task_time1;
-                pthread_mutex_unlock(&((p+index)->lock));
-            }
-
-            free(t_array);
-
         }
         /// ------------------------------------------------------------------
         ///                NE PAS TOUCHER APRÈS CETTE LIGNE
