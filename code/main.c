@@ -97,7 +97,7 @@ void processor_destroy(processor *p) {
 }
 
 void *processor_run(void *v_self) {
-    TODO
+
     processor  *proc = (processor *) v_self;
     long theo_time=0,
             real_time=0,
@@ -163,12 +163,14 @@ void *scheduler(void *v_sched_data) {
         /// ------------------------------------------------------------------
         {
             // ICI!
-
             long task_time1 = 0,
                     task_time2 = 0,
                     sched_time;
             int index=0;
             size_t sz;
+
+            // indique si la tache a été déposée
+            // dans la blocking queue triée
             bool task_put = false;
 
             if(t->type=='A') task_time1 = TASK_A_T;
@@ -181,6 +183,8 @@ void *scheduler(void *v_sched_data) {
                 sched_time = (p+index)->sched_t;
                 pthread_mutex_unlock(&((p+index)->lock));
 
+                // choisit le processeur avec le sched_time
+                // le plus petit afin d'y déposer la tache
                 for(int i=1;i<PROCESSOR_COUNT;++i) {
                     pthread_mutex_lock(&((p+i)->lock));
                     if (sched_time>(p+i)->sched_t) {
@@ -195,6 +199,7 @@ void *scheduler(void *v_sched_data) {
                 sz = blocking_q_drain((p+index)->tasks,t_array,sz);
                 task_ptr task2;
 
+                // sert à trier la blocking queue d'un processeur
                 for(int i=0;i<sz;++i) {
                     task2 = t_array[i];
                     if(task2->type=='A') task_time2 = TASK_A_T;
@@ -203,22 +208,29 @@ void *scheduler(void *v_sched_data) {
                     if(task2->type=='D') task_time2 = TASK_D_T;
 
                     if(task_time1<=task_time2&&task_put==false) {
-                        blocking_q_put((p+index)->tasks, t);
+                        if(blocking_q_put((p+index)->tasks, t)) {
 
-                        pthread_mutex_lock(&((p+index)->lock));
-                        (p+index)->sched_t += task_time1;
-                        pthread_mutex_unlock(&((p+index)->lock));
+                            pthread_mutex_lock(&((p + index)->lock));
+                            (p + index)->sched_t += task_time1;
+                            pthread_mutex_unlock(&((p + index)->lock));
 
-                        task_put=true;
+                            task_put = true;
+                        }
                     }
                     blocking_q_put((p+index)->tasks, task2);
                 }
-                if(task_put==false) {
-                    blocking_q_put((p+index)->tasks, t);
 
-                    pthread_mutex_lock(&((p+index)->lock));
-                    (p+index)->sched_t += task_time1;
-                    pthread_mutex_unlock(&((p+index)->lock));
+                // dépose la tache à la fin de la queue si aucune
+                // autre tache qui prend plus de temps a été trouvée
+                if(task_put==false) {
+                    if(blocking_q_put((p+index)->tasks, t)) {
+
+                        pthread_mutex_lock(&((p + index)->lock));
+                        (p + index)->sched_t += task_time1;
+                        pthread_mutex_unlock(&((p + index)->lock));
+
+                        task_put = true;
+                    }
                 }
 
             }
