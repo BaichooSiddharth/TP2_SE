@@ -124,7 +124,11 @@ void *processor_run(void *v_self) {
         if(t->type=='B') task_time = task_b();
         if(t->type=='C') task_time = task_c();
         if(t->type=='D') task_time = task_d();
-        if(t->type==POISON_PILL||t->type==NULL) break;
+        if(t->type==POISON_PILL) {
+            t->end = time(NULL);
+            real_time += t->end - t->start;
+            break;
+        }
 
         t->end = time(NULL);
         real_time += t->end - t->start;

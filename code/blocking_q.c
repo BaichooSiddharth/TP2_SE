@@ -65,7 +65,7 @@ void blocking_q_destroy(blocking_q *q) {
     pthread_cond_destroy(&(q->cond));
     blocking_q_node *current = q->first;
     while (current != NULL && current->next !=NULL){
-        task_ptr t = __blocking_q_take(q);
+        __blocking_q_take(q);
         //free(t);
         current = q->first;
     }
